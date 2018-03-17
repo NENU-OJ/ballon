@@ -9,7 +9,7 @@ import thread
 R = redis.Redis(host='localhost', port=6379) # change
 
 NAME = { # change
-    1: "* 李邦宁 113",
+    1: "* ToRapture 113",
     2: "Umi 445",
     3: "Citrus 339"
 }
