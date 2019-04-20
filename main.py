@@ -1,28 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import argparse
 import redis
 from Tkinter import *
 import ttk
+import json
 import time
 import thread
 
-R = redis.Redis(host='localhost', port=6379) # change
+R = None
+NAME = {}
+PROBLEM_NAME = {}
+CONTEST_ID = None
 
-NAME = { # change
-    1: "* ToRapture 113",
-    2: "Umi 445",
-    3: "Citrus 339"
-}
-
-PROBLEM_NAME = { # change
-    1: "A - 蓝色",
-    3: "B - 橙色",
-}
-
-CONTEST_ID = 1 # change
-
-QUEUE_NAME = "ballon_%d" % CONTEST_ID
-BACKUP_QUEUE_NAME = "ballon_bak_%d" % CONTEST_ID
+QUEUE_NAME = None
+BACKUP_QUEUE_NAME = None
 RUNID_FIELD = "runid"
 SUBMIT_TIME_FIELD = "submit_time"
 STATUS_FIELD = "status"
@@ -49,15 +41,15 @@ def get_status_key(user_id, pid):
 
 
 def get_name(user_id):
-    user_id = int(user_id)
+    user_id = str(user_id)
     if user_id in NAME:
         return NAME[user_id]
     else:
-        return "user: %d" % user_id
+        return "user: %s" % user_id
 
 
 def get_problem_color(pid):
-    pid = int(pid)
+    pid = str(pid)
     if pid in PROBLEM_NAME:
         return PROBLEM_NAME[pid]
     else:
@@ -257,4 +249,22 @@ class PrinterTkinter:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='NENU-OJ Ballon')
+    parser.add_argument('--namefile', dest='namefile', required=True, type=str, help='such as namefile.json')
+    parser.add_argument('--problemfile', dest='problemfile', required=True, type=str, help='such as problemfile.json')
+    parser.add_argument('--redishost', dest='redishost', required=True, type=str, help='such as 127.0.0.1')
+    parser.add_argument('--redisport', dest='redisport', required=True, type=int, help='such as 6379')
+    parser.add_argument('--contestid', dest='contestid', required=True, type=int, help='such as 9')
+    args = parser.parse_args()
+
+    R = redis.Redis(host=args.redishost, port=args.redisport)
+    CONTEST_ID = args.contestid
+    with open(args.namefile) as f:
+        NAME = json.loads(f.read())
+    with open(args.problemfile) as f:
+        PROBLEM_NAME = json.loads(f.read())
+
+    QUEUE_NAME = "ballon_%d" % CONTEST_ID
+    BACKUP_QUEUE_NAME = "ballon_bak_%d" % CONTEST_ID
+
     PrinterTkinter()
